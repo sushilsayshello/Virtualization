@@ -1,0 +1,5 @@
+$VMName = "Test_VM" 
+Set-VMProcessor -VMName $VMName -ExposeVirtualizationExtensions $true
+Get-VMNetworkAdapter -VMName $VMName | Set-VMNetworkAdapter -MacAddressSpoofing On
+
+#Use this code on the host Powershell
