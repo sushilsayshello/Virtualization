@@ -1,0 +1,17 @@
+# create VMs, install windows
+$vmname='miaoVM_3'
+$vhdname='c:\miao\VHDs\miaoVHD_3.vhdx'
+$vmlocation='c:\miao\VMs'
+
+# create a new vhdx
+New-VHD -Path $vhdname -SizeBytes 100GB
+
+# create new VM
+New-VM -Name $vmname -MemoryStartupBytes 2GB -BootDevice VHD -VHDPath $vhdname -Path $vmlocation -Generation 2
+SET-VMProcessor –VMName $VMName –count 3 -Reserve 5 -Maximum 10
+
+#enable nested VM
+Set-VMProcessor -VMName $vmname -ExposeVirtualizationExtensions $true
+Get-VMNetworkAdapter -VMName $VMName | Set-VMNetworkAdapter -MacAddressSpoofing On
+
+
