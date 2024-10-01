@@ -1,9 +1,9 @@
-# Host Script to Create D_miaoAccounting VM
+# Host Script to Create D_miaoLegaldoc VM
 #-------------------------------------------
-$VMName = "D_miaoAccounting"
-$mac1 = "00-15-5D-00-04-65"   # Static MAC Address
-$VHDPath = "C:\Users\miao\VHDs\Test_VM.vhdx"  # Path to your VHDX file
-$VMPath = "C:\Users\miao\VMs\D_miaoAccounting"  # Path to save VM configuration
+$VMName = "D_miaoLegaldoc"
+$mac1 = "00-15-5D-00-04-66"   # Static MAC Address
+$VHDPath = "C:\Users\miao\VHDs\Test_VM2.vhdx"  # Path to your VHDX file
+$VMPath = "C:\Users\miao\VMs\D_miaoLegaldoc"  # Path to save VM configuration
 
 # Remove the VM if it already exists (just in case)
 Remove-VM -Name $VMName -Force -ErrorAction SilentlyContinue
@@ -11,11 +11,11 @@ Remove-VM -Name $VMName -Force -ErrorAction SilentlyContinue
 # Create the new VM with Generation 2 and attach the existing VHDX
 New-VM -Name $VMName -BootDevice VHD -VHDPath $VHDPath -Path $VMPath -Generation 2
 
-# Set CPU to 7 vCPUs
-Set-VMProcessor -VMName $VMName -Count 7
+# Set CPU to 4 vCPUs
+Set-VMProcessor -VMName $VMName -Count 4
 
-# Set memory to 8 GB
-Set-VMMemory -VMName $VMName -StartupBytes 8GB
+# Set dynamic memory: minimum 2GB, startup 2GB, maximum 8GB
+Set-VMMemory -VMName $VMName -DynamicMemoryEnabled $true -MinimumBytes 2GB -StartupBytes 2GB -MaximumBytes 8GB -Priority 80 -Buffer 25
 
 # Remove default network adapter and add a new one with a static MAC address
 Remove-VMNetworkAdapter -VMName $VMName -Name "Network Adapter"
