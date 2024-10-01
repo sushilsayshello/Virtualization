@@ -1,0 +1,96 @@
+# miaoAccounting 
+#--------------------------------------------------------------------------------------
+# leave the VM to run at d drive to save disk space. d drive will disappear after shutdown
+# each time needs to run scripts at host and also individual VMs to set the ip address properly 
+$VMName="D_miaoAccounting"
+$mac1="00-00-00-00-6F-65”   
+# note the mac range needs to be valid, hex 65 is decimal 101 
+
+
+#remove if the vm is still there
+Remove-VM -Name $VMName -Force  
+New-VM -Name $VMName  -BootDevice VHD -VHDPath c:\miao\miaoAccounting.vhdx  -Path D:\miao -Generation 2 
+SET-VMProcessor –VMName $VMName –count 7
+Set-VMMemory $VMName  -StartupBytes 8GB 
+remove-VMNetworkAdapter -VMName $VMName -Name "Network Adapter"
+Add-VMNetworkAdapter -VMName $VMName -Name "financeNetNIC" -SwitchName "miaoFinanceNet"  -StaticMacAddress $mac1
+Set-VMProcessor -VMName $VMName -ExposeVirtualizationExtensions $true
+Get-VMNetworkAdapter -VMName $VMName | Set-VMNetworkAdapter -MacAddressSpoofing On
+
+
+$mac1="00-00-00-00-6F-65"
+$name1="FinanceNetNIC"
+$netif=(Get-NetAdapter | where {$_.MacAddress -eq $mac1}).InterfaceIndex
+$netname=(Get-NetAdapter | where {$_.MacAddress -eq $mac1}).name
+
+# if the program is run for adapter which had an ip address, it needs to be removed first
+Remove-NetIpAddress -InterfaceIndex $netif -AddressFamily IPv4  -Confirm:$false
+Remove-NetRoute -InterfaceIndex $netif -AddressFamily IPv4 -Confirm:$false
+
+New-NetIPAddress -IPAddress 192.168.111.101  -prefixlength 24 -defaultgateway 192.168.111.2  -InterfaceIndex $netif
+rename-netadapter -name $netname -newName $name1
+set-DnsClientServerAddress -InterfaceIndex $netif -ServerAddresses ("192.168.111.2")
+
+# miaoLegaldoc
+#--------------------------------------------------------------------------------------
+# leave the VM to run at d drive to save disk space. d drive will disappear after shutdown
+# each time needs to run scripts at host and also individual VMs to set the ip address properly 
+$VMName="D_miaoLegaldoc"
+$mac1="00-00-00-00-6F-66"
+
+# miaoLegaldoc
+#--------------------------------------------------------------------------------------
+# leave the VM to run at d drive to save disk space. d drive will disappear after shutdown
+# each time needs to run scripts at host and also individual VMs to set the ip address properly 
+$VMName="D_miaoLegaldoc"
+$mac1="00-00-00-00-6F-66"
+
+# miaoLegaldoc
+#--------------------------------------------------------------------------------------
+# leave the VM to run at d drive to save disk space. d drive will disappear after shutdown
+# each time needs to run scripts at host and also individual VMs to set the ip address properly 
+$VMName="D_miaoLegaldoc"
+$mac1="00-00-00-00-6F-66"
+
+# miaoLegaldoc
+#--------------------------------------------------------------------------------------
+# leave the VM to run at d drive to save disk space. d drive will disappear after shutdown
+# each time needs to run scripts at host and also individual VMs to set the ip address properly 
+$VMName="D_miaoLegaldoc"
+$mac1="00-00-00-00-6F-66"
+
+# miaoLegaldoc
+#--------------------------------------------------------------------------------------
+# leave the VM to run at d drive to save disk space. d drive will disappear after shutdown
+# each time needs to run scripts at host and also individual VMs to set the ip address properly 
+$VMName="D_miaoLegaldoc"
+$mac1="00-00-00-00-6F-66"
+
+# note the mac range needs to be valid
+Remove-VM -Name $VMName -Force
+New-VM -Name $VMName  -BootDevice VHD -VHDPath c:\miao\miaoLegaldoc.vhdx  -Path D:\miao -Generation 2 
+SET-VMProcessor –VMName $VMName –count 4
+Set-VMMemory $VMName -DynamicMemoryEnabled $true -MinimumBytes 2GB -StartupBytes 2GB -MaximumBytes 8GB -Priority 80 -Buffer 25
+remove-VMNetworkAdapter -VMName $VMName -Name "Network Adapter"
+Add-VMNetworkAdapter -VMName $VMName -Name "FinanceNetNIC" -SwitchName “miaoFinanceNet"  -StaticMacAddress $mac1
+ 
+Set-VMProcessor -VMName $VMName -ExposeVirtualizationExtensions $true
+Get-VMNetworkAdapter -VMName $VMName | Set-VMNetworkAdapter -MacAddressSpoofing On
+
+# After login:
+$mac1="00-00-00-00-6F-66"
+$name1="FinanceNetNIC"
+$netif=(Get-NetAdapter | where {$_.MacAddress -eq $mac1}).InterfaceIndex
+$netname=(Get-NetAdapter | where {$_.MacAddress -eq $mac1}).name
+
+# if the program is run for adapter which had an ip address, it needs to be removed first
+Remove-NetIpAddress -InterfaceIndex $netif -AddressFamily IPv4  -Confirm:$false
+Remove-NetRoute -InterfaceIndex $netif -AddressFamily IPv4 -Confirm:$false
+
+New-NetIPAddress -IPAddress 192.168.111.102  -prefixlength 28 -defaultgateway 192.168.111.2  -InterfaceIndex $netif
+rename-netadapter -name $netname -newName $name1
+set-DnsClientServerAddress -InterfaceIndex $netif -ServerAddresses ("192.168.111.2")
+
+
+
+
