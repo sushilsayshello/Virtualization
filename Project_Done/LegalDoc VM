@@ -1,0 +1,10 @@
+# Inside D_miaoLegaldoc VM
+
+# Find the interface index for the network adapter (with MAC address 00-15-5D-00-04-66)
+$netif = (Get-NetAdapter | Where-Object { $_.MacAddress -eq "00-15-5D-00-04-66" }).InterfaceIndex
+
+# Assign the IP address, subnet, and gateway to the network interface
+New-NetIPAddress -IPAddress 192.168.111.102 -PrefixLength 24 -DefaultGateway 192.168.111.2 -InterfaceIndex $netif
+
+# Set DNS server
+Set-DnsClientServerAddress -InterfaceIndex $netif -ServerAddresses 192.168.111.2
