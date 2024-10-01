@@ -1,0 +1,2 @@
+# Allow ICMP (ping) requests through Windows Firewall
+New-NetFirewallRule -Name "Allow ICMPv4-In" -Protocol ICMPv4 -IcmpType 8 -Direction Inbound -Action Allow
