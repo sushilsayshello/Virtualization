@@ -56,3 +56,7 @@ ping 192.30.0.59
 
 # Ping from host to ARMSushilDOC VM
 ping 192.30.0.89
+
+
+
+
