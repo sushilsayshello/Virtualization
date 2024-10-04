@@ -1,0 +1,69 @@
+# --- Step 1: Define Variables for VM Names, IP Addresses, and MAC Addresses ---
+$VMNameMS = "ARMSushilMS"
+$VMIPMS = "192.30.0.59"
+$MACAddressMS = "00-15-5D-00-04-10"  # Custom MAC address for MS VM
+
+$VMNameDOC = "ARMSushilDOC"
+$VMIPDOC = "192.30.0.89"
+$MACAddressDOC = "00-15-5D-00-04-20"  # Custom MAC address for DOC VM
+
+# --- Step 2: Create Internal Virtual Switch ---
+# Check if the internal switch "ARMMarketingSwitch" exists; if not, create it
+if (!(Get-VMSwitch -Name "ARMMarketingSwitch" -ErrorAction SilentlyContinue)) {
+    New-VMSwitch -Name "ARMMarketingSwitch" -SwitchType Internal
+}
+
+# --- Step 3: Configure the Host's IP Address on the Internal Switch ---
+# Assign a static IP to the host's internal network adapter associated with ARMMarketingSwitch
+New-NetIPAddress -InterfaceAlias "vEthernet (ARMMarketingSwitch)" -IPAddress 192.30.0.1 -PrefixLength 24
+
+# --- Step 4: Create and Configure the ARMSushilMS VM ---
+# Create the MS VM, assign it to the internal switch, and configure network settings
+New-VM -Name $VMNameMS -MemoryStartupBytes 4GB -SwitchName "ARMMarketingSwitch" -Generation 2
+Set-VMProcessor -VMName $VMNameMS -Count 4
+Add-VMNetworkAdapter -VMName $VMNameMS -SwitchName "ARMMarketingSwitch" -Name "ARMSushilMSNIC"
+
+# Ensure VM is off to set MAC Address
+Stop-VM -Name $VMNameMS -Force
+Set-VMNetworkAdapter -VMName $VMNameMS -StaticMacAddress $MACAddressMS
+Start-VM -Name $VMNameMS
+
+# Assign a static IP to ARMSushilMS VM
+Invoke-Command -VMName $VMNameMS -ScriptBlock {
+    New-NetIPAddress -InterfaceAlias "ARMSushilMSNIC" -IPAddress 192.30.0.59 -PrefixLength 24 -DefaultGateway 192.30.0.1
+}
+
+# --- Step 5: Create and Configure the ARMSushilDOC VM ---
+# Create the DOC VM, assign it to the internal switch, and configure network settings
+New-VM -Name $VMNameDOC -MemoryStartupBytes 4GB -SwitchName "ARMMarketingSwitch" -Generation 2
+Set-VMProcessor -VMName $VMNameDOC -Count 4
+Add-VMNetworkAdapter -VMName $VMNameDOC -SwitchName "ARMMarketingSwitch" -Name "ARMSushilDOCNIC"
+
+# Ensure VM is off to set MAC Address
+Stop-VM -Name $VMNameDOC -Force
+Set-VMNetworkAdapter -VMName $VMNameDOC -StaticMacAddress $MACAddressDOC
+Start-VM -Name $VMNameDOC
+
+# Assign a static IP to ARMSushilDOC VM
+Invoke-Command -VMName $VMNameDOC -ScriptBlock {
+    New-NetIPAddress -InterfaceAlias "ARMSushilDOCNIC" -IPAddress 192.30.0.89 -PrefixLength 24 -DefaultGateway 192.30.0.1
+}
+
+# --- Step 6: Allow ICMP (Ping) Traffic on Both VMs and Host ---
+# Enable ICMP traffic on the host and both VMs to ensure they respond to ping requests
+New-NetFirewallRule -DisplayName "Allow ICMPv4-In" -Protocol ICMPv4 -Direction Inbound -Action Allow
+Invoke-Command -VMName $VMNameMS -ScriptBlock {
+    New-NetFirewallRule -DisplayName "Allow ICMPv4-In" -Protocol ICMPv4 -Direction Inbound -Action Allow
+}
+Invoke-Command -VMName $VMNameDOC -ScriptBlock {
+    New-NetFirewallRule -DisplayName "Allow ICMPv4-In" -Protocol ICMPv4 -Direction Inbound -Action Allow
+}
+
+# --- Step 7: Test Connectivity (Ping) Between Host and VMs ---
+# Ping from the host to ARMSushilMS
+ping 192.30.0.59
+
+# Ping from the host to ARMSushilDOC
+ping 192.30.0.89
+
+# --- End of Script ---
